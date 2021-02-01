@@ -1,4 +1,5 @@
 -- Database creation, Tables creation
+DROP DATABASE IF EXISTS service_center;
 CREATE DATABASE IF NOT EXISTS service_center;
 
 USE service_center;
@@ -45,7 +46,7 @@ CREATE TABLE IF NOT EXISTS order_statuses(
 -- People Tables 
 CREATE TABLE IF NOT EXISTS customers(
 	id SERIAL PRIMARY KEY,
-	customer_type_id BIGINT,
+	customer_type_id BIGINT UNSIGNED,
 	full_name VARCHAR(255),
 	phone VARCHAR(20) UNIQUE,
 	email VARCHAR(255) UNIQUE,
@@ -53,7 +54,7 @@ CREATE TABLE IF NOT EXISTS customers(
 	
 	additional_information VARCHAR(255),
 	
-	FOREIGN KEY (type_id) REFERENCES customer_types(id)
+	FOREIGN KEY (customer_type_id) REFERENCES customer_types(id)
 );
 
 CREATE TABLE IF NOT EXISTS engineers(
@@ -67,8 +68,8 @@ CREATE TABLE IF NOT EXISTS engineers(
 );
 
 CREATE TABLE IF NOT EXISTS admittance(
-	engineer_id BIGINT,
-	tech_type_id BIGINT,
+	engineer_id BIGINT UNSIGNED,
+	tech_type_id BIGINT UNSIGNED,
 
 	FOREIGN KEY (engineer_id) REFERENCES engineers(id),
 	FOREIGN KEY (tech_type_id) REFERENCES tech_types(id)	
@@ -78,7 +79,8 @@ CREATE TABLE IF NOT EXISTS admittance(
 -- Storage & orders
 CREATE TABLE IF NOT EXISTS orders(
 	id SERIAL PRIMARY KEY,
-	status_id BIGINT,
+	repair_id BIGINT UNSIGNED DEFAULT NULL,
+	status_id BIGINT UNSIGNED DEFAULT 1,
 	created_at DATETIME DEFAULT NOW(),
 	closed_at DATETIME,
 	
@@ -87,7 +89,7 @@ CREATE TABLE IF NOT EXISTS orders(
 
 CREATE TABLE IF NOT EXISTS storage(
 	id SERIAL PRIMARY KEY,
-	order_id BIGINT,
+	order_id BIGINT UNSIGNED,
 	part_number VARCHAR(255),
 	part_description VARCHAR(255),
 	quantity INT NOT NULL,
@@ -98,16 +100,25 @@ CREATE TABLE IF NOT EXISTS storage(
 	FOREIGN KEY (order_id) REFERENCES orders(id)
 );
 
+CREATE TABLE IF NOT EXISTS ordered_parts (
+	order_id BIGINT UNSIGNED,
+	part_number VARCHAR(255),
+	quantity INT NOT NULL DEFAULT 1,
+	
+	FOREIGN KEY (order_id) REFERENCES orders(id)
+);
+
+
 
 -- Repairs & Parts
 CREATE TABLE IF NOT EXISTS repairs(
 	id SERIAL PRIMARY KEY,
 	
-	customer_id BIGINT,
-	engineer_id BIGINT,
-	repair_status_id BIGINT,
-	repair_type_id BIGINT,
-	tech_type_id BIGINT,
+	customer_id BIGINT UNSIGNED,
+	engineer_id BIGINT UNSIGNED DEFAULT 1,
+	repair_status_id BIGINT UNSIGNED DEFAULT 1,
+	repair_type_id BIGINT UNSIGNED,
+	tech_type_id BIGINT UNSIGNED,
 	
 	brand_name VARCHAR(255),
 	model VARCHAR(255),
@@ -115,7 +126,7 @@ CREATE TABLE IF NOT EXISTS repairs(
 	defect VARCHAR(255),
 	is_repeated_repair BIT DEFAULT 0,
 	
-	repair_description VARCHAR(255),
+	repair_description TEXT,
 	parts_were_used BIT DEFAULT 0,
 	
 	need_transfer_to_service BIT DEFAULT 0,
@@ -134,13 +145,22 @@ CREATE TABLE IF NOT EXISTS repairs(
 	FOREIGN KEY (tech_type_id) REFERENCES tech_types(id)
 );
 
+CREATE TABLE IF NOT EXISTS repair_events(
+	repair_id BIGINT UNSIGNED,
+	event VARCHAR(255),
+	occured_at DATETIME DEFAULT NOW(),
+	
+	FOREIGN KEY (repair_id) REFERENCES repairs(id)
+);
 
 
 CREATE TABLE IF NOT EXISTS parts_usage(
-	repair_id BIGINT,
-	storage_id BIGINT,
-	parts_quantity BIGINT DEFAULT 1,
+	repair_id BIGINT UNSIGNED,
+	storage_id BIGINT UNSIGNED,
+	part_number VARCHAR(255),
+	quantity BIGINT DEFAULT 1,
 	
 	FOREIGN KEY (repair_id) REFERENCES repairs(id),
 	FOREIGN KEY (storage_id) REFERENCES storage(id)
 );
+

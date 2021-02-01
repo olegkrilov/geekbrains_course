@@ -44,3 +44,10 @@ INSERT INTO order_statuses (name, description) VALUES
 	('Received partially', 'Parts was not received according to the Order.'),
 	('Re-sent', 'Parts recceived inapoppriated or tainted, order repeated.');
 
+INSERT INTO engineers (full_name, phone, email) VALUES
+	('NOT_ASSIGNED', '- -', '- -'),
+	('Ivan Petrov', '0990951932', 'Ivan.Petrov@mail.ru'),
+	('Petr Ivanov', '0950543227', 'Petr.Ivanov@gmail.com'),
+	('Fedor Michailovich', '03711122233', 'Fedor.Michailovich@yandex.ru'),
+	('Michail Fedorovich', '05712313232', 'Michail.Fedorovich@yzoho.com');
+
